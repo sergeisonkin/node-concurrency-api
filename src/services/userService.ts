@@ -1,4 +1,5 @@
 import prisma from "@/db.js";
+import { Worker } from "worker_threads";
 
 async function getAllUsers() {
   const users = await prisma.user.findMany();
@@ -20,11 +21,21 @@ async function createUser(email: string, name: string) {
 async function deleteUser(id: number) {
   const user = await prisma.user.delete({
     where: {
-      id: id
+      id: id,
     },
   });
 
   return user;
 }
 
-export { getAllUsers, createUser, deleteUser };
+async function getUserById(id: number) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+  });
+
+  return user;
+}
+
+export { getAllUsers, createUser, deleteUser, getUserById };
