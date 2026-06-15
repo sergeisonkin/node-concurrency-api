@@ -1,5 +1,4 @@
 import prisma from "@/db.js";
-import { Worker } from "worker_threads";
 
 async function getAllUsers() {
   const users = await prisma.user.findMany();

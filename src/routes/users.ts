@@ -1,11 +1,22 @@
 import { Router } from "express";
-import { getAllUsers, createUser, deleteUser, getUserById } from "@/services/userService.js";
-import { Worker } from "worker_threads";
+import type { User } from "@prisma/client";
+import {
+  getAllUsers,
+  createUser,
+  deleteUser,
+  getUserById,
+} from "@/services/userService.js";
 import asyncHandler from "@/utils/asyncHandler.js";
+import WorkerPool from "@/services/workerPool.js";
 const router = Router();
 
+
+const workerScript = new URL("../workers/report.worker.ts", import.meta.url)
+  .pathname;
+const pool = new WorkerPool<User>(workerScript, 4, 4);
+
 router.get("/", (req, res) => {
-  res.status(200).send('Success!');
+  res.status(200).send("Success!");
 });
 
 router.get(
@@ -20,21 +31,11 @@ router.get(
   "/users/:id/report",
   asyncHandler(async (req, res) => {
     const user = await getUserById(Number(req.params.id));
+    const result = await pool.run(user);
 
-    const report = await new Promise((resolve, reject) => {
-      const workerPath = new URL("../workers/report.worker.ts", import.meta.url).pathname;
-      const worker = new Worker(workerPath, {
-        workerData: { user },
-        execArgv: ["--import", "tsx"],
-      });
-
-      worker.on("message", resolve);
-      worker.on("error", reject);
-    })
-    
-    res.status(200).send(report);
-  })
-)
+    res.status(200).send(result);
+  }),
+);
 
 router.post(
   "/users",
@@ -53,6 +54,5 @@ router.delete(
     res.status(200).send(user);
   }),
 );
-
 
 export default router;
