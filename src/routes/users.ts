@@ -5,11 +5,11 @@ import {
   createUser,
   deleteUser,
   getUserById,
+  heavyCreate,
 } from "@/services/userService.js";
 import asyncHandler from "@/utils/asyncHandler.js";
 import WorkerPool from "@/services/workerPool.js";
 const router = Router();
-
 
 const workerScript = new URL("../workers/report.worker.ts", import.meta.url)
   .pathname;
@@ -41,6 +41,19 @@ router.post(
   "/users",
   asyncHandler(async (req, res) => {
     const user = await createUser(req.body.email, req.body.name);
+
+    res.status(201).send(user);
+  }),
+);
+
+router.post(
+  "/users/heavy",
+  asyncHandler(async (req, res) => {
+    const user = await heavyCreate(
+      req.body.email,
+      req.body.name,
+      req.body.password,
+    );
 
     res.status(201).send(user);
   }),

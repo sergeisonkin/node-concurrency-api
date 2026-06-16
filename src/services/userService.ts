@@ -1,4 +1,6 @@
 import prisma from "@/db.js";
+import WorkerPool from "./workerPool.js";
+import type { User } from "@prisma/client";
 
 async function getAllUsers() {
   const users = await prisma.user.findMany();
@@ -37,4 +39,22 @@ async function getUserById(id: number) {
   return user;
 }
 
-export { getAllUsers, createUser, deleteUser, getUserById };
+const hashWorkerScript = new URL("../workers/hash.worker.ts", import.meta.url)
+  .pathname;
+const hashPool = new WorkerPool<string>(hashWorkerScript, 4, 4);
+
+async function heavyCreate(email: string, name: string, password: string) {
+  const hashPassword = await hashPool.run(password);
+  
+  const user = await prisma.user.create({
+    data: {
+      email: email,
+      name: name,
+      password: hashPassword,
+    },
+  });
+
+  return user;
+}
+
+export { getAllUsers, createUser, deleteUser, getUserById, heavyCreate };
