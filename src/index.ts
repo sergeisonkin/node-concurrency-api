@@ -24,4 +24,14 @@ const shutdown = () => {
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
+process.on("uncaughtException", (error: Error) => {
+  console.error(`Error is ${error}`);
+  shutdown();
+});
+
+process.on("unhandledRejection", (error: unknown) => {
+  console.error(`Error is ${error}`);
+  shutdown();
+});
+
 export default server;

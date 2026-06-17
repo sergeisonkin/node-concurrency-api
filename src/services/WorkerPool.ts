@@ -14,11 +14,13 @@ interface PoolWorker<T> extends Worker {
 
 class WorkerPool<T> {
   private queue: Queue<T>[];
+  private workerScript: string;
   private workers: PoolWorker<T>[];
   private MAX_QUEUE_SIZE: number = 4;
 
   constructor(workerScript: string, size: number, MAX_QUEUE_SIZE: number) {
     this.queue = [];
+    this.workerScript = workerScript;
     this.workers = Array.from({ length: size }, () =>
       this._createWorker(workerScript),
     );
@@ -41,7 +43,22 @@ class WorkerPool<T> {
     worker.on("error", (reason) => {
       worker.busy = false;
       worker._reject(reason as T);
+
+      const newWorker = this._createWorker(workerScript);
+      const deadWorkerIndex = this.workers.indexOf(worker);
+      this.workers[deadWorkerIndex] = newWorker;
       this._next();
+    });
+
+    worker.on("exit", (code) => {
+      if (code !== 0) {
+        worker.busy = false;
+
+        const newWorker = this._createWorker(workerScript);
+        const deadWorkerIndex = this.workers.indexOf(worker);
+        this.workers[deadWorkerIndex] = newWorker;
+        this._next();
+      }
     });
 
     return worker;
