@@ -3,6 +3,7 @@ import { router, pool } from "@/routes/users.js";
 import { config } from "@/config/index.js";
 import prisma from "./db.js";
 import logger from "./utils/logger.js";
+import healthRouter from "./routes/health.js";
 
 const server = express();
 
@@ -17,14 +18,14 @@ server.use((req, res, next) => {
   next();
 });
 
-server.use(router);
+server.use(router, healthRouter);
 
-server.listen(config.port, () => {
+const httpServer = server.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
 });
 
 const shutdown = () => {
-  server.close(() => {
+  httpServer.close(() => {
     pool.terminate();
     prisma.$disconnect();
 

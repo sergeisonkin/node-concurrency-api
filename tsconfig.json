@@ -10,7 +10,10 @@
     "skipLibCheck": true,
     "types": ["node"],
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["src/*"]
     }
+  },
+  "exclude": ["eslint.config.ts", "prisma.config.ts"]
 }

@@ -7,13 +7,14 @@ import {
   getUserById,
   heavyCreate,
 } from "@/services/userService.js";
+import { config } from "@/config/index.js";
 import asyncHandler from "@/utils/asyncHandler.js";
 import WorkerPool from "@/services/workerPool.js";
 const router = Router();
 
 const workerScript = new URL("../workers/report.worker.ts", import.meta.url)
   .pathname;
-const pool = new WorkerPool<User>(workerScript, 4, 4);
+const pool = new WorkerPool<User>(workerScript, config.workerCount, config.threadPoolSize);
 
 router.get("/", (req, res) => {
   res.status(200).send("Success!");
@@ -31,6 +32,12 @@ router.get(
   "/users/:id/report",
   asyncHandler(async (req, res) => {
     const user = await getUserById(Number(req.params.id));
+
+    if (!user) {
+      res.status(404).send({ error: "User not found"});
+      return;
+    }
+
     const result = await pool.run(user);
 
     res.status(200).send(result);

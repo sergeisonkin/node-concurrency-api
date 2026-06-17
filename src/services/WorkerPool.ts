@@ -69,7 +69,9 @@ class WorkerPool<T> {
     const idle = this.workers.find((w) => !w.busy);
     if (!idle) return;
 
-    const { data, resolve, reject } = this.queue.shift();
+    const item = this.queue.shift();
+    if (!item) return;
+    const { data, resolve, reject } = item;
     idle.busy = true;
     idle._resolve = resolve;
     idle._reject = reject;
