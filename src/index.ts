@@ -2,10 +2,21 @@ import express from "express";
 import { router, pool } from "@/routes/users.js";
 import { config } from "@/config/index.js";
 import prisma from "./db.js";
+import logger from "./utils/logger.js";
 
 const server = express();
 
 server.use(express.json());
+
+server.use((req, res, next) => {
+  logger.info({
+    method: req.method,
+    url: req.url,
+  });
+
+  next();
+});
+
 server.use(router);
 
 server.listen(config.port, () => {
