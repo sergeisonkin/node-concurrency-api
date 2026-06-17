@@ -1,6 +1,5 @@
 import prisma from "@/db.js";
 import WorkerPool from "./workerPool.js";
-import type { User } from "@prisma/client";
 
 async function getAllUsers() {
   const users = await prisma.user.findMany();

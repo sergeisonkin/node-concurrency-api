@@ -1,15 +1,27 @@
 import express from "express";
-import usersRouter from "@/routes/users.js";
+import { router, pool } from "@/routes/users.js";
 import { config } from "@/config/index.js";
+import prisma from "./db.js";
 
-const app = express();
+const server = express();
 
-app.use(express.json());
-app.use(usersRouter);
+server.use(express.json());
+server.use(router);
 
-app.listen(config.port, () => {
+server.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
 });
 
+const shutdown = () => {
+  server.close(() => {
+    pool.terminate();
+    prisma.$disconnect();
 
-export default app;
+    process.exit(0);
+  });
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+export default server;

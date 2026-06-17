@@ -14,7 +14,9 @@ if (cluster.isPrimary) {
     console.log(`Worker ${worker.process.pid} died`);
     console.log("Forking a new worker...");
 
-    cluster.fork();
+    if (signal !== "SIGTERM" && code !== 0) {
+      cluster.fork();
+    }
   });
 } else {
   import("./index.js");
