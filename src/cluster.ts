@@ -3,6 +3,8 @@ import os from "os";
 
 const numCPUs = os.cpus().length;
 
+cluster.schedulingPolicy = cluster.SCHED_RR;
+
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running`);
 

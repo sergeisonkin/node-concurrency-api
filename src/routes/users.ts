@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { fileURLToPath } from "node:url";
 import type { User } from "@prisma/client";
 import {
   getAllUsers,
@@ -12,8 +13,9 @@ import asyncHandler from "@/utils/asyncHandler.js";
 import WorkerPool from "@/services/workerPool.js";
 const router = Router();
 
-const workerScript = new URL("../workers/report.worker.ts", import.meta.url)
-  .pathname;
+const workerScript = fileURLToPath(
+  new URL("../workers/report.worker.ts", import.meta.url),
+);
 const pool = new WorkerPool<User>(workerScript, config.workerCount, config.threadPoolSize);
 
 router.get("/", (req, res) => {

@@ -4,6 +4,7 @@ import { config } from "@/config/index.js";
 import prisma from "./db.js";
 import logger from "./utils/logger.js";
 import healthRouter from "./routes/health.js";
+import { isWindows } from "./utils/platform.js";
 
 const server = express();
 
@@ -33,8 +34,16 @@ const shutdown = () => {
   });
 };
 
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
+if (isWindows) {
+  process.on("SIGBREAK", shutdown);
+  process.on("SIGINT", shutdown);
+  process.on("message", (msg) => {
+    if (msg === "shutdown") shutdown();
+  });
+} else {
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+}
 
 process.on("uncaughtException", (error: Error) => {
   console.error(`Error is ${error}`);
