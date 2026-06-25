@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import prisma from "@/db.js";
 import WorkerPool from "./workerPool.js";
 import { config } from "@/config/index.js";
@@ -40,8 +41,9 @@ async function getUserById(id: number) {
   return user;
 }
 
-const hashWorkerScript = new URL("../workers/hash.worker.ts", import.meta.url)
-  .pathname;
+const hashWorkerScript = fileURLToPath(
+  new URL("../workers/hash.worker.ts", import.meta.url),
+);
 const hashPool = new WorkerPool<string>(hashWorkerScript, config.workerCount, config.threadPoolSize);
 
 async function heavyCreate(email: string, name: string, password: string) {
